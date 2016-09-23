@@ -269,18 +269,20 @@ when both `Applicative` and `Traverse` instances are in scope and the compiler
 is looking for a `Functor`, `traverseIsFunctor` wins.
 
 Do we win? I'm not sure. This encoding is certainly more cumbersome than what
-we started with, but solves the problem we ran into. For a more developed
-version of this I direct you to work being done on [scato][scato] and
-[Scalaz 8][scalaz8].
+we started with, but solves the problem we ran into.
 
-One downside of this encoding is that superclasses (e.g. `Functor`) are aware
-of subclasses (e.g. `Applicative`, `Traverse`). From a modularity perspective,
-this seems quite strange, but in Scala the only other tried alternative is
-subtyping which has worse problems.
+One thing to note is that we've baked the implicit hierarchy into `Functor`
+itself - in general this means all superclasses are aware of their subclasses.
+This is convenient from a usability perspective as companion objects are
+considered during implicit resoltuion, but from a modularity perspective is
+strange and in this case would prevent extensions to the hierarchy from external
+sources. This can be solved by removing the hierarchy from the superclasses at
+the cost of needing an import at use sites to bring the implicits into scope.
+This can be seen in the [BaseHierarchy][hierarchy] of Scalaz 8.
 
 ## Compromise?
 
-One thing we can try is to make some compromise of the two. We can
+Another thing we can try is to make some compromise of the two. We can
 continue to use subtyping for a blessed subset of the hierarchy, and use
 members for any branching type class.
 
@@ -323,6 +325,7 @@ the Scato encoding for Scalaz 8 can be found [here][scatoScalaz].
 [fixCats]: https://github.com/typelevel/cats/pull/1379 "MTL fix for Cats"
 [fixScalaz]: https://github.com/scalaz/scalaz/pull/1262 "MTL fix for Scalaz"
 [forcomp]: http://docs.scala-lang.org/tutorials/FAQ/yield.html "How does yield work?"
+[hierarchy]: https://github.com/scalaz/scalaz/blob/611d69f6b2bff3500181d0338dec9d6143d386ad/base/src/main/scala/BaseHierarchy.scala "Scalaz 8 base hierarchy"
 [implicits]: http://eed3si9n.com/revisiting-implicits-without-import-tax "revisiting implicits without import tax"
 [issueCats]: https://github.com/typelevel/cats/issues/1210 "Better accommodate MTL style"
 [issueScalaz]: https://github.com/scalaz/scalaz/issues/1110 "MTL-style doesn't seem to work in Scala"
